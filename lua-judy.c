@@ -7,7 +7,7 @@
 #include "lauxlib.h"
 #include <Judy.h>
 
-#include "../shared_header.h"
+/*#include "../shared_header.h"*/
 
 #define JUDY_METATABLE  "Judy"
 #define JUDY_INDEX_MAX 64

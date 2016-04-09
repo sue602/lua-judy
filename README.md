@@ -6,6 +6,11 @@ http://judy.sourceforge.net/downloads/10minutes.htm
 download from
 https://sourceforge.net/projects/judy/
 
+install judy by
+$cd (judy dir)
+$./configure
+$make & make install
+
 documents:
 http://judy.sourceforge.net/doc/
 
