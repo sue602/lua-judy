@@ -1,4 +1,4 @@
-include ../../skynet.mk
+# include ../../skynet.mk
 
 LUA_VERSION =       5.3
 TARGET =            judy.so
