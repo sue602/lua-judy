@@ -4,7 +4,25 @@
 --
 local core = require "judy.core"
 
-local judy = {}
+local judy = {
+	--see lua-judy.c define
+	--array type
+	JUDYL=1,
+	JUDYSL=2,
+	JUDYHS=3,
+	--data type
+	NUMBER=3,
+	STRING=4,
+	ARRAY=2,
+}
+
+--[[get PValue
+]]
+function judy.value(cobj,key,type)
+	local ret = core.value(cobj,key,type)
+	return ret
+end
+
 
 ---------------------------------------------------------------------JudySL BEGIN---------------------------------------------------------------------
 local judyl = {}

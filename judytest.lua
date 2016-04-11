@@ -163,17 +163,17 @@ print("inner a4= ",judycore.JSLG(innerjudyret,"a4",judycore.NUMBER))
 -- judy.release(innerjudytest)
 
 
-local judysl = judy.JudySL(judycore.JUDYSL)
+local judysl = judy.JudySL(judy.JUDYSL)
 for i=1,10 do
 	judysl:JSLI(tostring(i),i*100)
 end
-print("judysl data[2]=",judysl:JSLG("2",judycore.NUMBER))	
+print("judysl data[2]=",judysl:JSLG("2",judy.NUMBER))	
 
-local judyl = judy.JudyL(judycore.JUDYL,false)
+local judyl = judy.JudyL(judy.JUDYL,false)
 for i=1,10 do
 	judyl:JLI((i),"jli=" .. tostring(i*5))
 end
-print("======judyl data[2]=",judyl:JLG(2,judycore.STRING))	
+print("======judyl data[2]=",judyl:JLG(2,judy.STRING))	
 judyl:LForeach(function ( index,dd )
 	print("judyl foreach dd = ",dd,index)
 end,judycore.STRING)
@@ -193,7 +193,7 @@ local function test_mem(  )
 	local memcount2 = collectgarbage("count")
 	print("mem delta = ",memcount2-memcount1)
 
-	local judyarray = judy.JudySL(judycore.JUDYSL)
+	local judyarray = judy.JudySL(judy.JUDYSL)
 	local memcount3 = collectgarbage("count")
 	for i=1,loopcount do
 		judyarray:JSLI(tostring(i),i)
@@ -210,26 +210,26 @@ local function test_mem(  )
 
 	local t3 = os.time()
 	for i=1,loopcount do			
-		local d1 = judyarray:JSLG(tostring(i),judycore.NUMBER)
+		local d1 = judyarray:JSLG(tostring(i),judy.NUMBER)
 		print("d1=====",d1)
 	end
 
 	print("object before == ",judyl:cobject())
-	judyarray:JSLI(tostring(11),judyl:cobject()) -- 这个是嵌套
-	local judylobject = judyarray:JSLG(tostring(11),judycore.ARRAY)
+	judyarray:JSLI(tostring(11),judyl:cobject())
+	local judylobject = judyarray:JSLG(tostring(11),judy.ARRAY)
 	print("object after = ",judylobject)
-	local constructJudyl = judy.JudyL(judycore.JUDYL,false,judylobject)
-	constructJudyl:LForeach(function ( index,dd ) 
+	local constructJudyl = judy.JudyL(judy.JUDYL,false,judylobject)
+	constructJudyl:LForeach(function ( index,dd )
 		print("=====>inner judyl foreach dd = ",dd,index)
-	end,judycore.STRING)
+	end,judy.STRING)
 
 	-- judyarray:SLForeach(function ( dd,key )
 	-- 	print("dd = ",dd,key)
-	-- end,judycore.NUMBER)
-	-- local dd,key = judyarray:JSLF("",judycore.NUMBER)
+	-- end,judy.NUMBER)
+	-- local dd,key = judyarray:JSLF("",judy.NUMBER)
 	-- print("dd = ",dd,key)
 	-- while dd do
-	-- 	dd,key = judyarray:JSLN(key,judycore.NUMBER)
+	-- 	dd,key = judyarray:JSLN(key,judy.NUMBER)
 	-- 	print("WHILE dd = ",dd,key)
 	-- 	skynet.sleep(100)
 	-- end
@@ -237,7 +237,7 @@ local function test_mem(  )
 	local t4 = os.time()
 	print("time delta2 = ",t4-t3)
 
-	print("data[1234]=",tab["1234"],judyarray:JSLG("1234",judycore.NUMBER))
+	print("data[1234]=",tab["1234"],judyarray:JSLG("1234",judy.NUMBER))
 	judyarray = nil
 	for i=1,10 do
 		collectgarbage("collect")
