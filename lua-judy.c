@@ -11,6 +11,7 @@
 
 #define JUDY_METATABLE  "Judy"
 #define JUDY_INDEX_MAX 64
+#define JUDYMALLOC JudyMalloc 
 
 enum _JudyType{
     JUDYL = 1,
@@ -316,7 +317,11 @@ _JSLI(lua_State *L) {
         JSLI(PValue, PJArray, keystring);
         if (NULL != PValue)
         {
-            *PValue = valuestring;
+            char * desValue = JUDYMALLOC(valuelen+1);
+            memset(desValue,0,valuelen+1);
+            memcpy(desValue,valuestring,valuelen);
+
+            *PValue = desValue;
             lua_pushlightuserdata(L,PJArray);
             lua_pushlightuserdata(L,PValue);
             return 2;
@@ -383,7 +388,11 @@ _JLI(lua_State *L) {
         JLI(PValue, PJArray, Index);
         if (NULL != PValue)
         {
-            *PValue = valuestring;
+            char * desValue = JUDYMALLOC(valuelen+1);
+            memset(desValue,0,valuelen+1);
+            memcpy(desValue,valuestring,valuelen);
+
+            *PValue = desValue;
             lua_pushlightuserdata(L,PJArray);
             lua_pushlightuserdata(L,PValue);
             return 2;
@@ -451,7 +460,11 @@ _JHSI(lua_State *L) {
         JHSI(PValue, PJArray, keystring,keylen);
         if (NULL != PValue)
         {
-            *PValue = valuestring;
+            char * desValue = JUDYMALLOC(valuelen+1);
+            memset(desValue,0,valuelen+1);
+            memcpy(desValue,valuestring,valuelen);
+
+            *PValue = desValue;
             lua_pushlightuserdata(L,PJArray);
             lua_pushlightuserdata(L,PValue);
             return 2;
