@@ -11,7 +11,8 @@
 
 #define JUDY_METATABLE  "Judy"
 #define JUDY_INDEX_MAX 64
-#define JUDYMALLOC JudyMalloc 
+#define JUDYMALLOC JudyMalloc
+#define JUDYFREE JudyFree
 
 enum _JudyType{
     JUDYL = 1,
@@ -32,7 +33,7 @@ _JSLFA(lua_State *L) {
 
     if (PJArray == NULL)
     {
-        printf("is nil === \n");
+        printf("_JSLFA PJArray is nil === \n");
         lua_pushboolean(L,0);
         return 1;
     }
@@ -54,16 +55,16 @@ _JLFA(lua_State *L) {
 
     if (PJArray == NULL)
     {
-        printf("is nil === \n");
+        printf("_JLFA PJArray is nil === \n");
         lua_pushboolean(L,0);
         return 1;
     }
-    //printf("JLFA release judy array addr= %p\n",PJArray );
+    printf("JLFA release judy array addr= %p\n",PJArray );
 
     JLFA(Bytes, PJArray);              // free array
 
     PJArray = (Pvoid_t) NULL;
-    //printf("JLFA release Judy array used %lu bytes of memory\n", Bytes);
+    printf("JLFA release Judy array used %lu bytes of memory\n", Bytes);
 
     lua_pushboolean(L,1);
     return 1;
@@ -80,11 +81,11 @@ _JLMU(lua_State *L) {
         lua_pushnil(L);
         return 1;
     }
-    //printf("JLMU judy array addr= %p\n",PJArray );
+    printf("JLMU judy array addr= %p\n",PJArray );
 
     JLMU(Bytes, PJArray);
 
-    //printf("JLMU Judy array used %lu bytes of memory\n", Bytes);
+    printf("JLMU Judy array used %lu bytes of memory\n", Bytes);
 
     lua_pushinteger(L,Bytes);
     return 1;
@@ -97,16 +98,16 @@ _JHSFA(lua_State *L) {
 
     if (PJArray == NULL)
     {
-        printf("is nil === \n");
+        printf("_JHSFA PJArray is nil === \n");
         lua_pushboolean(L,0);
         return 1;
     }
-    //printf("HSFA release judy array addr= %p\n",PJArray );
+    printf("HSFA release judy array addr= %p\n",PJArray );
 
     JHSFA(Bytes, PJArray);              // free array
 
     PJArray = (Pvoid_t) NULL;
-    //printf("HSFA release Judy array used %lu bytes of memory\n", Bytes);
+    printf("HSFA release Judy array used %lu bytes of memory\n", Bytes);
 
     lua_pushboolean(L,1);
     return 1;
@@ -138,7 +139,7 @@ _JSLG(lua_State *L) {
     
     if (NULL != PValue)
     {
-       // printf("jslg pvalue =%p value=%p\n",PValue,*PValue );
+       // printf("jslg pvalue =%p value=%p argc =%d\n",PValue,*PValue,argc );
        if (argc == 2)
        {
            lua_pushlightuserdata(L,PValue);
@@ -155,13 +156,18 @@ _JSLG(lua_State *L) {
             }
             else if (STRING == dType)
             {
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 return 1;
             }
             else if (ARRAY == dType)
             {
                 // printf("_JSLG PValue ==%p\n",PValue);
                 lua_pushlightuserdata(L,*PValue);
+                return 1;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PValue);
                 return 1;
             }
        }
@@ -210,12 +216,17 @@ _JLG(lua_State *L) {
             }
             else if (STRING == dType)
             {
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 return 1;
             }
             else if (ARRAY == dType)
             {
                 lua_pushlightuserdata(L,*PValue);
+                return 1;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PValue);
                 return 1;
             }
        }
@@ -266,12 +277,17 @@ _JHSG(lua_State *L) {
             }
             else if (STRING == dType)
             {
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 return 1;
             }
             else if (ARRAY == dType)
             {
                 lua_pushlightuserdata(L,*PValue);
+                return 1;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PValue);
                 return 1;
             }
        }
@@ -283,6 +299,27 @@ _JHSG(lua_State *L) {
 static int
 _new(lua_State *L) {
     lua_pushnil(L);
+    return 1;
+}
+
+static int
+_freestring(lua_State *L) {
+    PWord_t   PValue = lua_touserdata(L, 1);
+    // printf("free  === %p\n", PValue);
+    short ret = 0;
+    if (NULL != PValue)
+    {   
+        char * buf =(char*)(*PValue);
+        // printf("free 2  === %p\n", buf);
+        if (NULL != buf)
+        {
+            int len =  strlen(buf);
+            // printf("free %s len=%d\n",buf,len );
+            JUDYFREE(buf,len);
+            ret = 1;
+        }
+    }
+    lua_pushboolean(L,ret);
     return 1;
 }
 
@@ -350,7 +387,7 @@ _JSLI(lua_State *L) {
             *PValue = data;
             // printf("LUA_TUSERDATA pvalue==> %p *pvalue=%p data=%p\n", PValue,*PValue,data);
             lua_pushlightuserdata(L,PJArray);
-            lua_pushlightuserdata(L,*PValue);
+            lua_pushlightuserdata(L,PValue);
             return 2;
         }
     }
@@ -395,6 +432,7 @@ _JLI(lua_State *L) {
             *PValue = desValue;
             lua_pushlightuserdata(L,PJArray);
             lua_pushlightuserdata(L,PValue);
+            printf("JLI string PValue=%p, *PValue=%p ,desValue=%p \n",PValue,*PValue,desValue );
             return 2;
         }
     }
@@ -420,7 +458,7 @@ _JLI(lua_State *L) {
             *PValue = data;
             // printf("LUA_TUSERDATA pvalue==> %p *pvalue=%p data=%p\n", PValue,*PValue,data);
             lua_pushlightuserdata(L,PJArray);
-            lua_pushlightuserdata(L,*PValue);
+            lua_pushlightuserdata(L,PValue);
             return 2;
         }
     }
@@ -491,7 +529,7 @@ _JHSI(lua_State *L) {
             void * data = lua_touserdata(L,3);
             *PValue = data;
             lua_pushlightuserdata(L,PJArray);
-            lua_pushlightuserdata(L,*PValue);
+            lua_pushlightuserdata(L,PValue);
             return 2;
         }
     }
@@ -642,7 +680,7 @@ _JSLF(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -650,6 +688,13 @@ _JSLF(lua_State *L) {
             {
                 lua_pushlightuserdata(L,PJArray);
                 lua_pushlightuserdata(L,*PValue);
+                lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
+                return 3;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PJArray);
+                lua_pushlightuserdata(L,PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -704,7 +749,7 @@ _JSLN(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -712,6 +757,13 @@ _JSLN(lua_State *L) {
             {
                 lua_pushlightuserdata(L,PJArray);
                 lua_pushlightuserdata(L,*PValue);
+                lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
+                return 3;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PJArray);
+                lua_pushlightuserdata(L,PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -766,7 +818,7 @@ _JSLL(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -774,6 +826,13 @@ _JSLL(lua_State *L) {
             {
                 lua_pushlightuserdata(L,PJArray);
                 lua_pushlightuserdata(L,*PValue);
+                lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
+                return 3;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PJArray);
+                lua_pushlightuserdata(L,PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -828,7 +887,7 @@ _JSLP(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -836,6 +895,13 @@ _JSLP(lua_State *L) {
             {
                 lua_pushlightuserdata(L,PJArray);
                 lua_pushlightuserdata(L,*PValue);
+                lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
+                return 3;
+            }
+            else
+            {
+                lua_pushlightuserdata(L,PJArray);
+                lua_pushlightuserdata(L,PValue);
                 lua_pushlstring ( L, myBuffer, strlen(myBuffer) );
                 return 3;
             }
@@ -853,6 +919,7 @@ JSL
 static int
 _JLF(lua_State *L) {
     int argc = lua_gettop(L);    /* number of arguments */
+    // printf("JLF function,PJArrayis === \n");
     Pvoid_t  PJArray = lua_touserdata(L, 1);
     if (PJArray == NULL)
     {
@@ -869,7 +936,7 @@ _JLF(lua_State *L) {
     JLF(PValue, PJArray, Index);   // store string into array
     if (NULL != PValue)
     {
-       // printf("jslg pvalue =%p value=%p\n",PValue,*PValue );
+       // printf("JLF pvalue =%p value=%p argc=%d\n",PValue,*PValue,argc );
        if (argc == 2)
        {
            lua_pushlightuserdata(L,PJArray);
@@ -879,7 +946,10 @@ _JLF(lua_State *L) {
        }
        else
        {
+            short dataType = lua_type(L,3);
+
             short dType = lua_tonumber(L,3);
+            // printf("dd ==== %d  dataType=%d\n",dType,dataType );
             if (NUMBER == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
@@ -890,16 +960,24 @@ _JLF(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
             }
             else if (ARRAY == dType)
             {
+                // printf(" ARRAY == dType array ====%p *pvalue=%p\n",PValue,*PValue);
                 lua_pushlightuserdata(L,PJArray);
                 lua_pushlightuserdata(L,*PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
+            }
+            else
+            {
+               lua_pushlightuserdata(L,PJArray);
+               lua_pushlightuserdata(L,PValue);
+               lua_pushinteger ( L, Index );
+               return 3;
             }
        }
     }
@@ -949,16 +1027,24 @@ _JLN(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
             }
             else if (ARRAY == dType)
             {
+                // printf("JLN  is arrayp=%p, *PValue=%p \n",PValue,*PValue);
                 lua_pushlightuserdata(L,PJArray);
                 lua_pushlightuserdata(L,*PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
+            }
+            else
+            {
+               lua_pushlightuserdata(L,PJArray);
+               lua_pushlightuserdata(L,PValue);
+               lua_pushinteger ( L, Index );
+               return 3;
             }
        }
     }
@@ -1008,7 +1094,7 @@ _JLL(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
             }
@@ -1018,6 +1104,13 @@ _JLL(lua_State *L) {
                 lua_pushlightuserdata(L,*PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
+            }
+            else
+            {
+               lua_pushlightuserdata(L,PJArray);
+               lua_pushlightuserdata(L,PValue);
+               lua_pushinteger ( L, Index );
+               return 3;
             }
        }
     }
@@ -1067,7 +1160,7 @@ _JLP(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
             }
@@ -1077,6 +1170,13 @@ _JLP(lua_State *L) {
                 lua_pushlightuserdata(L,*PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
+            }
+            else
+            {
+               lua_pushlightuserdata(L,PJArray);
+               lua_pushlightuserdata(L,PValue);
+               lua_pushinteger ( L, Index );
+               return 3;
             }
        }
     }
@@ -1277,7 +1377,7 @@ _JLBC(lua_State *L) {
             else if (STRING == dType)
             {
                 lua_pushlightuserdata(L,PJArray);
-                lua_pushstring(L, *PValue);
+                lua_pushstring(L,(const char *) *PValue);
                 lua_pushinteger ( L, Index );
                 return 3;
             }
@@ -1303,38 +1403,34 @@ static int
 _Pvalue(lua_State *L) {
     int argc = lua_gettop(L);    /* number of arguments */
 
-    Pvoid_t  PJArray = lua_touserdata(L, 1);
-
-    if (PJArray == NULL)
+    // printf("pvalue type === %d\n",lua_type(L,1) );
+    PWord_t   PValue = lua_touserdata(L, 1);
+    if (NULL != PValue)
     {
-        printf("_Pvalue function,PJArray is nil === \n");
-        lua_pushnil(L);
-        return 1;
-    }
-
-    PWord_t   PValue = lua_touserdata(L, 2);
-
-    if (argc == 2)
-    {
-       lua_pushlightuserdata(L,PValue);
-       return 1;
-    }
-
-    short dType = lua_type(L, 3);
-    if (NUMBER == dType)
-    {
-        lua_pushnumber(L,*PValue);
-        return 1;
-    }
-    else if (STRING == dType)
-    {
-        lua_pushstring(L, *PValue);
-        return 1;
-    }
-    else if (ARRAY == dType)
-    {
-        lua_pushlightuserdata(L,*PValue);
-        return 1;
+        short dType = lua_tointeger(L, 2);
+        // printf("pvalue=%p *pvalue=%p &pvalue = %p ,type =%d\n",PValue,*PValue,&PValue, dType );
+        if (NUMBER == dType)
+        {
+            lua_pushnumber(L,*PValue);
+            return 1;
+        }
+        else if (STRING == dType)
+        {
+            // printf("it's string\n");
+            lua_pushstring(L,(const char *) *PValue);
+            return 1;
+        }
+        else if (ARRAY == dType)
+        {
+            lua_pushlightuserdata(L,*PValue);
+            return 1;
+        }
+        else
+        {
+            printf("Pvalue function \n");
+            PWord_t   PPValue = *PValue;
+            lua_pushlightuserdata(L,*PPValue);
+        }
     }
 
     lua_pushnil(L);
@@ -1349,6 +1445,7 @@ luaopen_judy_core ( lua_State *L )
     luaL_Reg l[] = {
         {"Judy",_new},
         {"value",_Pvalue},
+        {"freestring",_freestring},
         /*JudySL*/
         {"JSLFA",_JSLFA},
         {"JSLI",_JSLI},
@@ -1405,3 +1502,4 @@ luaopen_judy_core ( lua_State *L )
 
     return 1;
 }
+
