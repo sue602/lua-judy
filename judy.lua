@@ -43,7 +43,7 @@ local judylmeta = {
 
 function judy.JudyL(type,autorelease,cobject)
 	local cobj = cobject or ( core.Judy() )
-	autorelease = autorelease or true
+	if nil == autorelease then autorelease = true end
 	local self = {
 		__cobj = cobj,
 		__type = type,
@@ -223,7 +223,7 @@ local judyslmeta = {
 
 function judy.JudySL(type,autorelease,cobject)
 	local cobj = cobject or ( core.Judy() )
-	autorelease = autorelease or true
+	if nil == autorelease then autorelease = true end
 	local self = {
 		__cobj = cobj,
 		__type = type,
@@ -343,7 +343,7 @@ local judyhsmeta = {
 
 function judy.JudyHS(type,autorelease,cobject)
 	local cobj = cobject or ( core.Judy() )
-	autorelease = autorelease or true
+	if nil == autorelease then autorelease = true end
 	local self = {
 		__cobj = cobj,
 		__type = type,
