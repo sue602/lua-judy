@@ -7,19 +7,27 @@ local core = require "judy.core"
 local judy = {
 	--see lua-judy.c define
 	--array type
-	JUDYL=1,
-	JUDYSL=2,
-	JUDYHS=3,
+	JUDYL=core.JUDYL,
+	JUDYSL=core.JUDYSL,
+	JUDYHS=core.JUDYHS,
 	--data type
-	NUMBER=3,
-	STRING=4,
-	ARRAY=2,
+	NUMBER=core.NUMBER,
+	STRING=core.STRING,
+	ARRAY=core.ARRAY,
 }
 
 --[[get PValue
 ]]
-function judy.value(cobj,key,type)
-	local ret = core.value(cobj,key,type)
+function judy.value(cobj,type)
+	print("type === ",type)
+	local ret = core.value(cobj,type)
+	return ret
+end
+
+--[[freestring
+]]
+function judy.freestring(cobj)
+	local ret = core.freestring(cobj)
 	return ret
 end
 
@@ -33,6 +41,7 @@ local judylmeta = {
 		print("call JudyL gc ->")
 		if self.__autorelease then
 			core.JLFA(self.__cobj)
+			self.__cobj = nil
 			print("call JudyL gc -> deleted")
 		else
 			self.__cobj = nil
@@ -56,6 +65,17 @@ end
 ]]
 function judyl:cobject()
 	return self.__cobj
+end
+
+--[[release c object directly
+]]
+function judyl:release()
+	if self.__cobj then
+		core.JLFA(self.__cobj)
+		self.__cobj = nil
+		self.__autorelease = false --set to false to disable autorelease when auto GC function take effect
+ 		print("call JudyL gc -> deleted directly")
+	end
 end
 
 --[[Insert an Index and Value into the JudyL array PJLArray. If the Index is successfully inserted, the Value is initialized to 0. 
@@ -213,6 +233,7 @@ local judyslmeta = {
 		print("call JudySL gc ->")
 		if self.__autorelease then
 			core.JSLFA(self.__cobj)
+			self.__cobj = nil
 			print("call JudySL gc -> deleted")
 		else
 			self.__cobj = nil
@@ -236,6 +257,17 @@ end
 ]]
 function judysl:cobject()
 	return self.__cobj
+end
+
+--[[release c object directly
+]]
+function judysl:release()
+	if self.__cobj then
+		core.JSLFA(self.__cobj)
+		self.__cobj = nil
+		self.__autorelease = false --set to false to disable autorelease when auto GC function take effect
+ 		print("call JudySL gc -> deleted directly")
+	end
 end
 
 --[[Insert an Index string and Value in the JudySL array PJSLArray. If the Index is successfully inserted, the Value is initialized to 0. 
@@ -333,6 +365,7 @@ local judyhsmeta = {
 		print("call JudyHS gc ->")
 		if self.__autorelease then
 			core.JHSFA(self.__cobj)
+			self.__cobj = nil
 			print("call JudyHS gc -> deleted")
 		else
 			self.__cobj = nil
@@ -356,6 +389,17 @@ end
 ]]
 function judyhs:cobject()
 	return self.__cobj
+end
+
+--[[release c object directly
+]]
+function judyhs:release()
+	if self.__cobj then
+		core.JHSFA(self.__cobj)
+		self.__cobj = nil
+		self.__autorelease = false --set to false to disable autorelease when auto GC function take effect
+ 		print("call JudyHS gc -> deleted directly")
+	end
 end
 
 --[[

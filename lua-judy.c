@@ -7,7 +7,7 @@
 #include "lauxlib.h"
 #include <Judy.h>
 
-/*#include "../shared_header.h"*/
+//#include "../shared_header.h"
 
 #define JUDY_METATABLE  "Judy"
 #define JUDY_INDEX_MAX 64
@@ -161,12 +161,13 @@ _JSLG(lua_State *L) {
             }
             else if (ARRAY == dType)
             {
-                // printf("_JSLG PValue ==%p\n",PValue);
+                printf("_JSLG PValue ==%p\n",PValue);
                 lua_pushlightuserdata(L,*PValue);
                 return 1;
             }
             else
             {
+                // printf("_JSLG with nil type===============%p\n",PValue );
                 lua_pushlightuserdata(L,PValue);
                 return 1;
             }
@@ -385,7 +386,7 @@ _JSLI(lua_State *L) {
         {
             void * data = lua_touserdata(L,3);
             *PValue = data;
-            // printf("LUA_TUSERDATA pvalue==> %p *pvalue=%p data=%p\n", PValue,*PValue,data);
+            printf("LUA_TUSERDATA pvalue==> %p *pvalue=%p data=%p\n", PValue,*PValue,data);
             lua_pushlightuserdata(L,PJArray);
             lua_pushlightuserdata(L,PValue);
             return 2;
@@ -1388,6 +1389,13 @@ _JLBC(lua_State *L) {
                 lua_pushinteger ( L, Index );
                 return 3;
             }
+            else
+            {
+                lua_pushlightuserdata(L,PJArray);
+                lua_pushlightuserdata(L,PValue);
+                lua_pushinteger ( L, Index );
+                return 3;
+            }
        }
     }
     lua_pushlightuserdata(L,PJArray);
@@ -1502,4 +1510,3 @@ luaopen_judy_core ( lua_State *L )
 
     return 1;
 }
-
